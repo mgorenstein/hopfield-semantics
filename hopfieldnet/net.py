@@ -23,7 +23,7 @@ class HopfieldNetwork(object):
     def get_weights(self):
         """Return the weights array"""
         return self._weights
-    
+
     def calculate_neuron_output(self, neuron, input_pattern):
         """Calculate the output of the given neuron"""
         num_neurons = len(input_pattern)
@@ -57,7 +57,7 @@ class HopfieldNetwork(object):
         result = input_pattern.copy()
 
         while True:
-            update_list = range(self._num_inputs)
+            update_list = list(range(self._num_inputs))
             shuffle(update_list)
 
             changed, result = self.run_once(update_list, result)
