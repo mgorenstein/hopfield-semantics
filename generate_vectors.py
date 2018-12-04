@@ -1,14 +1,10 @@
 import gensim
 import pickle
 from nltk.corpus import wordnet as wn
+import numpy as np
 
-# map between WN and DeConf keys
-with open('sense_key_map.txt','r') as tsv:
-    split = [line.strip().split('\t') for line in tsv]
-    sense_map = {line[1]:line[0] for line in split}
-
-# Load DeConf: https://pilehvar.github.io/deconf/
-model = gensim.models.KeyedVectors.load_word2vec_format('sense-model.bin', binary=True)
+# Load Word2Bits, 1 Bit / 1200 dims / top 400k vocab
+model = gensim.models.KeyedVectors.load_word2vec_format('./models/w2b.vec', binary=False)
 
 categories = [('animal', 'animal.n.01'),
               ('machine', 'machine.n.01'),
@@ -27,38 +23,37 @@ def get_all_hyponyms(synset):
     return all_hyponyms
 
 '''
-Extract the unique set of lemma keys from a list
-of hyponyms.
+Extract the unique set of lemma names from a list
+of hyponyms, but only if the lemma name's primary
+sense is that of the hyponym.
 '''
-def all_lemma_keys(hyponym_list):
-    all_keys = []
-    for synset in hyponym_list:
-        all_keys += [lemma.key() for lemma in synset.lemmas()]
-    return list(set(all_keys))
+def all_lemma_names(hyponyms):
+    all_names = []
+    for synset in hyponyms:
+        for name in synset.lemma_names():
+            if synset == wn.synsets(name)[0]:
+                all_names.append(name)
+    return list(set(all_names))
 
 '''
-Vectorize a lemma name by:
-1. translating the lemma into its sense key
-2. mapping the sense key into the DeConf sense_ID
-3. getting the vector for the sense_ID
+Vectorize a lemma name, if it's in the vocab
 '''
-def vectorize_one(lemma_key):
+def vectorize_one(lemma_name):
     try:
-        sense_ID = sense_map[lemma_key]
-        vec = model.get_vector(sense_ID)
-        return vec
+        vec = model.get_vector(lemma_name)
+        return vec * 3 # multiply so vals are {-1, 1}
     except KeyError:
         return np.array([])
 
 '''
-Vectorize a list of lemma keys
+Vectorize a list of lemma names
 '''
-def vectorize_all(lemmas):
+def vectorize_all(lemma_names):
     vectors = {}
-    for lemma in lemmas:
-        vec = vectorize_one(lemma)
+    for name in lemma_names:
+        vec = vectorize_one(name)
         if vec.any():
-            vectors[lemma] = vec
+            vectors[name] = vec
     return vectors
 
 '''
@@ -71,8 +66,8 @@ def main():
         cat_name, cat_wordnet = category
         syn = wn.synset(cat_wordnet)
         all_hyponyms = get_all_hyponyms(syn)
-        all_lemmas = all_lemma_keys(all_hyponyms)
-        cat_vector = vectorize_one(syn.lemmas()[0].key())
+        all_lemmas = all_lemma_names(all_hyponyms)
+        cat_vector = vectorize_one(cat_name)
         vectors = vectorize_all(all_lemmas)
         vector_dict[cat_name] = {'hyponym_vectors': vectors,
                                 'category_vector': cat_vector}
