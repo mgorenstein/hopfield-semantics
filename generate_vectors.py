@@ -1,39 +1,12 @@
 import gensim
 import pickle
-from nltk.corpus import wordnet as wn
 import numpy as np
+from wordfreq import zipf_frequency
+from nltk.corpus import wordnet as wn
+from data import categories
 
 # Load Word2Bits, 1 Bit / 1200 dims / top 400k vocab
 model = gensim.models.KeyedVectors.load_word2vec_format('./models/w2b.vec', binary=False)
-
-categories = [('animal', 'animal.n.01'),
-              ('machine', 'machine.n.01'),
-              ('person', 'person.n.01'),
-              ('game', 'game.n.01'),
-              ('fruit', 'fruit.n.01'),
-              ('vegetable', 'vegetable.n.01'),
-              ('clothing', 'clothing.n.01')]
-
-'''
-For a given synset, pick up all hyponyms to root
-'''
-def get_all_hyponyms(synset):
-    hyp = lambda s:s.hyponyms()
-    all_hyponyms = list(synset.closure(hyp))
-    return all_hyponyms
-
-'''
-Extract the unique set of lemma names from a list
-of hyponyms, but only if the lemma name's primary
-sense is that of the hyponym.
-'''
-def all_lemma_names(hyponyms):
-    all_names = []
-    for synset in hyponyms:
-        for name in synset.lemma_names():
-            if synset == wn.synsets(name)[0]:
-                all_names.append(name)
-    return list(set(all_names))
 
 '''
 Vectorize a lemma name, if it's in the vocab
@@ -62,15 +35,16 @@ vectorize them and place them into a dict.
 '''
 def main():
     vector_dict = {}
-    for category in categories:
-        cat_name, cat_wordnet = category
-        syn = wn.synset(cat_wordnet)
-        all_hyponyms = get_all_hyponyms(syn)
-        all_lemmas = all_lemma_names(all_hyponyms)
-        cat_vector = vectorize_one(cat_name)
-        vectors = vectorize_all(all_lemmas)
-        vector_dict[cat_name] = {'hyponym_vectors': vectors,
-                                'category_vector': cat_vector}
+    for category, data in categories.items():
+        examples = data['examples']
+        cat_vector = vectorize_one(category)
+        low_vec = vectorize_one(data['low_freq'])
+        high_vec = vectorize_one(data['high_freq'])
+        vectors = vectorize_all(examples)
+        vector_dict[category] = {'hyponym_vectors': vectors,
+                                'category_vector': cat_vector,
+                                'high_vector': high_vec,
+                                'low_vector': low_vec}
 
     with open('vector_dict.pickle', 'wb') as fi:
         pickle.dump(vector_dict, fi)
