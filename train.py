@@ -9,6 +9,8 @@ import distance
 with open('vector_dict.pickle', 'rb') as fi:
     data = pickle.load(fi)
 
+mapping = {idx:cat_name for (idx, cat_name) in enumerate(list(data.keys()))}
+
 '''
 For a given network output, calculate the hamming distance
 between that vector and those of the input patterns to determine
@@ -20,7 +22,7 @@ def find_closest(output, input_patterns):
         ham_dist = distance.hamming(output, pattern)
         distances.append(ham_dist)
     val, idx = min((val, idx) for (idx, val) in enumerate(distances))
-    return val, idx
+    return idx
 
 '''
 Train the network on the category input patterns, then flip a number
@@ -42,7 +44,7 @@ def train_and_flip(data, network, num_bits):
         for x in range(num_bits):
             bit_to_flip = indices[x]
             pattern[bit_to_flip] *= -1
-        close_cat, idx = find_closest(output, input_patterns)
+        idx = find_closest(output, input_patterns)
         if i == idx: correct += 1
 
     return correct
@@ -61,9 +63,9 @@ def train_and_evaluate(data, network, vector_type):
         mistakes = []
         for pattern in hyp_vecs:
             output = network.run(pattern)
-            close_cat, idx = find_closest(output, input_patterns)
+            idx = find_closest(output, input_patterns)
             if i == idx: correct += 1
-            else: mistakes.append(close_cat)
+            else: mistakes.append(mapping[idx])
         mistakes = dict(Counter(mistakes))
         results.append({'correct': correct, 'num_vecs': num_vecs,
             'mistakes': mistakes, 'category': cat, 'vector_type': vector_type})
