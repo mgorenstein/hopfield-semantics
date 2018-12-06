@@ -1,8 +1,7 @@
 import gensim
 import pickle
+import random
 import numpy as np
-from wordfreq import zipf_frequency
-from nltk.corpus import wordnet as wn
 from data import categories
 
 # Load Word2Bits, 1 Bit / 1200 dims / top 400k vocab
@@ -30,6 +29,18 @@ def vectorize_all(lemma_names):
     return vectors
 
 '''
+For each dimension, find the most common bit,
+or choose randomly if the sum along that dimension is 0.
+'''
+def calculate_average(vectors):
+    combo = np.array(vectors)
+    summed = np.sum(combo, axis=0)
+    summed[summed<0] = -1.
+    summed[summed>0] = 1.
+    summed[summed==0] = random.choice([-1., 1.])
+    return summed
+
+'''
 For each category given, collect all of its hyponyms,
 vectorize them and place them into a dict.
 '''
@@ -41,8 +52,10 @@ def main():
         low_vec = vectorize_one(data['low_freq'])
         high_vec = vectorize_one(data['high_freq'])
         vectors = vectorize_all(examples)
+        average_vec = calculate_average(vectors)
         vector_dict[category] = {'hyponym_vectors': vectors,
                                 'category_vector': cat_vector,
+                                'average_vector': average_vec,
                                 'high_vector': high_vec,
                                 'low_vector': low_vec}
 

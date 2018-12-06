@@ -9,8 +9,7 @@ people = ['salesperson','cashier','clerk','chef','cook','nurse','waitress',
 'scientist','soldier','surgeon']
 
 machine = ['lathe','turbine','compressor','engine','refrigerator','clock',
-'pump','conveyor','calculator','computer','telephone','drill','sander',
-'bandsaw','robot','wheel','car','train','airplane','ship','bicycle']
+'pump','conveyor','calculator','telephone','drill','sander','bandsaw','wheel']
 
 lit = ['fiction','nonfiction','poetry','acrostic','essay','fable','tale',
 'novella','novel','story','parable','drama','screenplay','eclogue','ode',
@@ -46,7 +45,7 @@ animal = ['aardvark','alligator','anaconda','antelope','baboon','bat','bear',
 'wolf','whale','zebra']
 
 categories={'animal': {'examples': animal, 'high_freq': 'dog', 'low_freq': 'marmoset'},
-'people': {'examples': people, 'high_freq': 'doctor', 'low_freq': 'fishmonger'},
+'profession': {'examples': people, 'high_freq': 'doctor', 'low_freq': 'fishmonger'},
 'machine': {'examples': machine, 'high_freq': 'car', 'low_freq': 'lathe'},
 'literature': {'examples': lit, 'high_freq': 'novel', 'low_freq': 'limerick'},
 'music': {'examples': music, 'high_freq': 'symphony', 'low_freq': 'scherzo'},
