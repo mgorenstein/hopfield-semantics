@@ -52,7 +52,7 @@ def main():
         low_vec = vectorize_one(data['low_freq'])
         high_vec = vectorize_one(data['high_freq'])
         vectors = vectorize_all(examples)
-        average_vec = calculate_average(vectors)
+        average_vec = calculate_average(list(vectors.values()))
         vector_dict[category] = {'hyponym_vectors': vectors,
                                 'category_vector': cat_vector,
                                 'average_vector': average_vec,

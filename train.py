@@ -53,7 +53,13 @@ Train the network on a set of input patterns corresponding to categories
 of interest, then run the network with items in those categories and
 return information about the success rate.
 '''
-def train_and_evaluate(data, network, vector_type):
+def train_and_evaluate(data, vector_type):
+    input_patterns = [data[cat][vector_type] for cat in data.keys()]
+    # initialize the network
+    network = HopfieldNetwork(1200)
+    # train the network
+    hebbian_training(network, input_patterns)
+
     results = []
     for i, cat in enumerate(data.keys()):
         cat_data = data[cat]
