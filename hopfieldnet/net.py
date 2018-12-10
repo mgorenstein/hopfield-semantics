@@ -49,7 +49,7 @@ class HopfieldNetwork(object):
 
         return changed, result
 
-    def run(self, input_pattern, max_iterations=10):
+    def run(self, input_pattern, max_iterations=50):
         """Run the network using the input data until the output state doesn't change
         or a maximum number of iteration has been reached."""
         iteration_count = 0

@@ -2,12 +2,15 @@ import pickle
 import numpy as np
 from hopfieldnet.net import HopfieldNetwork
 from hopfieldnet.trainers import hebbian_training
+from neupy import algorithms
 from collections import Counter
 from random import shuffle
 import distance
 
 with open('vector_dict.pickle', 'rb') as fi:
     data = pickle.load(fi)
+
+data = {key:val for key, val in data.items() if key in ['animal', 'fruit', 'clothing', 'vegetable']}
 
 mapping = {idx:cat_name for (idx, cat_name) in enumerate(list(data.keys()))}
 
@@ -24,6 +27,23 @@ def find_closest(output, input_patterns):
     val, idx = min((val, idx) for (idx, val) in enumerate(distances))
     return idx
 
+def make_confusion_matrix(results_df):
+    vector_types = results_df['vector_type'].unique()
+    results = {v_type : {'y':[], 'y_pred':[]} for v_type in vector_types}
+    for i, row in results_df.iterrows():
+        v_type = row['vector_type']
+        category = row['category']
+        num_vecs = row['num_vecs']
+        mistakes = row['mistakes']
+        results[v_type]['y'] += [category] * num_vecs
+        total_num_mistakes = 0
+        for mis_category, num in mistakes.items():
+            total_num_mistakes += num
+            results[v_type]['y_pred'] += [mis_category] * num
+        results[v_type]['y_pred'] += [category] * (num_vecs - total_num_mistakes)
+    return results
+
+
 '''
 Train the network on the category input patterns, then flip a number
 of random bits from each pattern and determine whether the network
@@ -32,18 +52,14 @@ converges to the correct basin.
 def train_and_flip(data, network, num_bits):
     input_patterns = [data[cat]['category_vector'] for cat in data.keys()]
 
-    # initialize the network
-    network = HopfieldNetwork(1200)
-    # train the network
-    hebbian_training(network, input_patterns)
-
     correct = 0
     for i, pattern in enumerate(input_patterns):
         indices = list(range(len(pattern)))
-        output = network.run(pattern)
+        shuffle(indices)
         for x in range(num_bits):
             bit_to_flip = indices[x]
             pattern[bit_to_flip] *= -1
+        output = network.run(pattern)
         idx = find_closest(output, input_patterns)
         if i == idx: correct += 1
 
