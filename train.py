@@ -7,7 +7,7 @@ from collections import Counter
 from random import shuffle
 import distance
 
-with open('vector_dict.pickle', 'rb') as fi:
+with open('./data/vector_dict.pickle', 'rb') as fi:
     data = pickle.load(fi)
 
 data = {key:val for key, val in data.items() if key in ['animal', 'fruit', 'clothing', 'vegetable']}

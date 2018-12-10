@@ -2,7 +2,7 @@ import gensim
 import pickle
 import random
 import numpy as np
-from data import categories
+from data.data import categories
 
 # Load Word2Bits, 1 Bit / 1200 dims / top 400k vocab
 model = gensim.models.KeyedVectors.load_word2vec_format('./models/w2b.vec', binary=False)
@@ -59,5 +59,5 @@ def main():
                                 'high_vector': high_vec,
                                 'low_vector': low_vec}
 
-    with open('vector_dict.pickle', 'wb') as fi:
+    with open('./data/vector_dict.pickle', 'wb') as fi:
         pickle.dump(vector_dict, fi)
